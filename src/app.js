@@ -5,6 +5,9 @@ const connectDb=require('./config/database');
 const bcrypt=require("bcrypt");
 const validator=require("validator");
 const validateSignUpData=require('./utils/validation');
+const cookieParser=require('cookie-parser');
+const jwt=require('jsonwebtoken');
+const {userAuth}=require('./middlewares/userAuth');
 const User=require("./models/user");
 const app=express();
 
@@ -16,7 +19,8 @@ connectDb().then(()=>{
 }).catch((err)=>{
     console.error("Can't able to connect to database");
 })
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 app.post("/signup",async(req,res)=>{
     //this is the dummy data
     // const userObj={
@@ -58,7 +62,7 @@ app.post("/signup",async(req,res)=>{
 
 })
 //login api
-app.post("/login",(req,res)=>{
+app.post("/login",async(req,res)=>{
     const {email,password}=req.body;
     
     try{
@@ -68,12 +72,19 @@ app.post("/login",(req,res)=>{
         throw new Error("Invlaid credentials");
     }
     //Authentication
-    const user=User.findOne({email:email});
+    const user=await User.findOne({email:email});
     if(!user){
         res.status(500).send("User not present");
     }
     else{
-        if(bcrypt.compare(password,user.password)){
+        const isValidPassword= bcrypt.compare(password,user.password);
+        if(isValidPassword){
+            //If it is valid password then we need to send a cokkie with a token
+            // res.cookie("token","alslejoihtbpoeidngguiurhbaiuhrgbriri");
+            //above one is normal cookie
+            //now creating jwt 
+            const token= jwt.sign({_id:user._id},"DEV@Tinder$790");
+            res.cookie("token",token);
             res.send("Login succsefull");
         }
         else{
@@ -89,18 +100,53 @@ catch(err){
 
 })
 //this api is to get specific user with the requested email
-app.get("/user",async(req,res)=>{
+app.get("/user",userAuth,async(req,res)=>{
+    //normal auth
+    // try{
+    // const users=await User.find({email:req.body.email});
+    // if(users.length===0){
+    //     res.status(401).send("User not found");
+    // }
+    // else{
+    //     console.log(req.cookies);
+    //     res.send(users);
+    // }
+    // }catch(err){
+    //     console.error("something went wrong");
+    //     res.status(400).send("something went wrong");
+    // }
     try{
-    const users=await User.find({email:req.body.email});
-    if(users.length===0){
-        res.status(401).send("User not found");
-    }
-    else{
-        res.send(users);
-    }
+        const {email}=req.body.email;
+        // if(!email){
+        //     console.log("email not valid");
+        //     throw new Error("Invalid credentials");
+        // }
+        // const {token}=req.cookies;
+        // if(!token){
+        //     console.log("cookie not there");
+        //     throw new Error("Invalid token");
+        // }
+        // else{
+        //     const decodedmessage=jwt.verify(token,"DEV@Tinder$790");
+        //     const {_id}=decodedmessage;
+        //     const user=await User.find({_id:_id});
+        //     if(!user){
+        //         console.log("user not there");
+        //         res.status(500).send("user not found");
+        //     }
+        //     res.send(user);
+        // }
+        //we have done authentication using middle ware
+        const user=req.user;
+        res.send(user);
+
+
+    
+
+
     }catch(err){
-        console.error("something went wrong");
-        res.status(400).send("something went wrong");
+       
+        res.status(500).send("something went wrong");
     }
 })
 //this is to get all the users from the database
