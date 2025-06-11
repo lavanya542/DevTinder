@@ -20,20 +20,20 @@ userRouter.get("/user/requests/recieved",userAuth,async (req,res)=>{
 })
 userRouter.get("/user/connections",userAuth,async (req,res)=>{
     const allConnections=await ConnectionRequest.find({
-        $or:[
+        $and:[{$or:[
             {fromUser:req.user._id},
             {
                 toUser:req.user._id,
             }
 
-        ]
+        ]},{status:"accepted"}]
     }).populate("fromUser",["firstName","lastName"]).populate("toUser",["firstName","lastName"]);
 
     const realData=allConnections.map((row)=>{
         if(row.fromUser._id.toString()===req.user._id.toString()){
-            return row.fromUser;
+            return row.toUser;
         }
-        return row.toUser;
+        return row.fromUser;
     });
     res.send(realData);
 })
@@ -63,7 +63,7 @@ userRouter.get("/feed",userAuth,async (req,res)=>{
             {_id:{$nin:Array.from(notAllowedData)}},
             {_id:{$ne:loggedInUser._id}}
         ]
-    }).select(["firstName","lastName","about"]).skip(skip).limit(limit)
+    }).select(["firstName","lastName","about","photoUrl","age"]).skip(skip).limit(limit)
     res.json({
         message:"your feed is",
         data

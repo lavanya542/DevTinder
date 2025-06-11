@@ -36,8 +36,16 @@ authRouter.post("/signup",async(req,res)=>{
             email,
             password:encryptedPassword
         });
-        await user.save();
-        res.send("Data saved succsefully");
+        const resp=await user.save();
+        const token= jwt.sign({_id:resp._id},"DEV@Tinder$790");
+        res.cookie("token",token,{
+            httpOnly: true,
+            sameSite: "None",    // ✅ Important for cross-origin
+            secure: true         // ✅ Must be true if you're on HTTPS or Chrome will block it
+          });
+        res.json({message:"Login succsefull",
+        data:resp
+    });
 
     }catch(err){
         console.error(err);
@@ -62,15 +70,21 @@ authRouter.post("/login",async(req,res)=>{
         res.status(500).send("User not present");
     }
     else{
-        const isValidPassword= bcrypt.compare(password,user.password);
+        const isValidPassword=await bcrypt.compare(password,user.password);
         if(isValidPassword){
             //If it is valid password then we need to send a cokkie with a token
             // res.cookie("token","alslejoihtbpoeidngguiurhbaiuhrgbriri");
             //above one is normal cookie
             //now creating jwt 
             const token= jwt.sign({_id:user._id},"DEV@Tinder$790");
-            res.cookie("token",token);
-            res.send("Login succsefull");
+            res.cookie("token",token, {
+                httpOnly: true,
+                sameSite: "None",    // ✅ Important for cross-origin
+                secure: true ,
+              });
+            res.json({message:"Login succsefull",
+            data:user
+        });
         }
         else{
             res.status(500).send("Login unsuccsesfull");

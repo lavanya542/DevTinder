@@ -51,16 +51,19 @@ requestRouter.post("/request/review/:status/:requestId",userAuth,async (req,res)
 
     
     const status=req.params.status;
+    console.log(status);
     const allowed=["accepted","rejected"];
     if(!allowed.includes(status)){
+        console.log("error is in status");
         throw new Error("status not allowed");
     }
     const dbCheck=await ConnectionRequestModel.findOne({
-        _id:req.params.requestId,
+        fromUser:req.params.requestId,
         toUser:req.user._id,
         status:"intrested"
     });
     if(!dbCheck){
+        console.log("error is bcoz of db");
         throw new Error("invalid connection request");
     }
     dbCheck.status=status;

@@ -5,7 +5,7 @@ const userAuth=async (req,res,next)=>{
         const {token}=req.cookies;
         if(!token){
             console.log("token not found");
-            throw new Error("invalid credentials");
+            res.status(401).send("please login");
         }
         const decodedData=jwt.verify(token,"DEV@Tinder$790");
         const {_id}=decodedData;

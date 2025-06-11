@@ -14,7 +14,7 @@ const connectionRequestSchema=new mongoose.Schema({
     status:{
         type:String,
         enum:{
-            values:["intrested","accepted","rejected",""],
+            values:["intrested","accepted","rejected","ignored"],
             message:`{value} is not a status type`,
         }
     },},

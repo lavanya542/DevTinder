@@ -36,6 +36,10 @@ const userSchema=new mongoose.Schema({
     about:{
         type:String,
         default:"If not entered anything this will be the about"
+    },
+    photoUrl:{
+        type:String,
+        default:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fdefault-profile-pic&psig=AOvVaw3ig0DH0DkIQ0TGOCNLRCut&ust=1749464827919000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCJCHu8HO4Y0DFQAAAAAdAAAAABAE"
     }
 },{timestamp:true});
 const User=mongoose.model('User',userSchema);

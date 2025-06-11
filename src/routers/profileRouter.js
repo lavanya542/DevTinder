@@ -4,7 +4,8 @@ const User=require("../models/user");
 const {userAuth}=require('../middlewares/userAuth');
 const {profileEditValidation}=require("../utils/validation");
 
-profileRouter.get("/user",userAuth,async(req,res)=>{
+
+profileRouter.get("/profile/view",userAuth,async(req,res)=>{
     //normal auth
     // try{
     // const users=await User.find({email:req.body.email});
@@ -20,7 +21,7 @@ profileRouter.get("/user",userAuth,async(req,res)=>{
     //     res.status(400).send("something went wrong");
     // }
     try{
-        const {email}=req.body.email;
+        
         // if(!email){
         //     console.log("email not valid");
         //     throw new Error("Invalid credentials");
@@ -42,7 +43,7 @@ profileRouter.get("/user",userAuth,async(req,res)=>{
         // }
         //we have done authentication using middle ware
         const user=req.user;
-        res.send(user);
+        res.json({data:user});
 
 
     
@@ -50,10 +51,14 @@ profileRouter.get("/user",userAuth,async(req,res)=>{
 
     }catch(err){
        
-        res.status(500).send("something went wrong");
+        res.status(500).send("something went wrong",err.message);
     }
 })
 profileRouter.patch('/profile/edit',userAuth,async(req,res)=>{
+    try{
+
+    
+    console.log("hi");
     if(!profileEditValidation(req)){
         throw new Error("validation fails");
     }
@@ -64,6 +69,9 @@ profileRouter.patch('/profile/edit',userAuth,async(req,res)=>{
         "message":"user updated succsefully",
         "user":loggedInUser
     })
+}catch(err){
+    console.log(err.message);
+}
 
 
 })
